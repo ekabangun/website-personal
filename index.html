@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Palindrome User App</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blueDark:#1F4E66;
+  --gradient:linear-gradient(180deg,
+               rgba(79,137,152,0.9) 0%,
+               rgba(55,110,145,0.8) 35%,
+               rgba(31,78,102,0.95) 100%);
+  font-family:'Poppins',sans-serif;
+}
+*{box-sizing:border-box}
+body,html{margin:0;padding:0;height:100%}
+section{display:none;height:100%;width:100%}
+section.active{display:flex;flex-direction:column}
+
+/* ===== Screen 1 ===== */
+#screen1{
+  align-items:center;justify-content:center;
+  background:var(--gradient);color:#fff;gap:24px;padding:0 32px;
+}
+.icon-circle{
+  width:96px;height:96px;border-radius:50%;
+  background:rgba(255,255,255,0.15);
+  display:flex;align-items:center;justify-content:center;font-size:40px;
+}
+input,button{
+  width:100%;border:none;border-radius:6px;
+  font-size:14px;padding:12px 16px;font-family:inherit;
+}
+input{background:#fff;color:#333}
+button{
+  margin-top:6px;color:#fff;background:var(--blueDark);
+  font-weight:600;cursor:pointer;letter-spacing:.5px
+}
+button:disabled{opacity:.5;cursor:not-allowed}
+
+/* ===== Screen 2 ===== */
+#screen2{
+  background:#fff;color:#1b1b1b;padding:24px;height:100%;
+  display:flex;flex-direction:column
+}
+nav{display:flex;align-items:center;gap:12px}
+nav .back{font-size:20px;cursor:pointer}
+#welcomeName{font-size:18px;font-weight:700;margin:0}
+#selectedAvatar{border:2px solid #ddd;border-radius:50%;object-fit:cover}
+.spacer{flex:1}
+
+/* ===== Modal: Choose a User ===== */
+#userModal{
+  position:fixed;inset:0;background:rgba(0,0,0,.35);
+  display:none;align-items:center;justify-content:center;z-index:50;
+}
+#userModal.active{display:flex}
+.modal-card{
+  width:90%;max-width:420px;background:#fff;border-radius:16px;
+  box-shadow:0 6px 24px rgba(0,0,0,.16);display:flex;flex-direction:column;
+  max-height:80vh
+}
+.modal-header{
+  padding:16px 20px;border-bottom:1px solid #eee;display:flex;
+  gap:12px;align-items:center
+}
+.modal-header strong{flex:1;font-size:16px}
+.close-btn{background:none;border:none;font-size:20px;cursor:pointer}
+.modal-body{padding:0 20px 20px;overflow-y:auto;flex:1}
+.modal-body ul{list-style:none;margin:0;padding:0}
+.modal-body li{
+  display:flex;align-items:center;gap:14px;padding:12px 0;
+  border-bottom:1px solid #f0f0f0;cursor:pointer;
+  transition:background .15s
+}
+.modal-body li:hover{background:#f5f7fa}
+.modal-body img{width:44px;height:44px;border-radius:50%;object-fit:cover}
+.modal-body .info{display:flex;flex-direction:column;font-size:13px}
+.modal-body .info span:first-child{font-weight:600;font-size:14px}
+</style>
+</head>
+<body>
+
+<!-- ===== Screen 1 ===== -->
+<section id="screen1" class="active">
+  <div class="icon-circle">👤</div>
+
+  <input id="nameInput" type="text" placeholder="Name">
+  <input id="palInput"  type="text" placeholder="Palindrome">
+  <button id="checkBtn">CHECK</button>
+  <button id="nextBtn" disabled>NEXT</button>
+</section>
+
+<!-- ===== Screen 2 ===== -->
+<section id="screen2">
+  <nav>
+    <div class="back" onclick="showScreen(1)">❮</div>
+    <strong>Second Screen</strong>
+  </nav>
+  <p>Welcome<br><span id="welcomeName">John Doe</span></p>
+
+  <!-- Selected user (nama + foto) -->
+  <div style="display:flex;align-items:center;gap:16px;margin:40px 0">
+    <img id="selectedAvatar" src="https://via.placeholder.com/60" width="60" height="60">
+    <h2 id="selectedName" style="margin:0">Selected User Name</h2>
+  </div>
+
+  <div class="spacer"></div>
+  <button id="chooseBtn">Choose a User</button>
+</section>
+
+<!-- ===== Modal Choose a User ===== -->
+<div id="userModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <button class="close-btn" onclick="toggleModal(false)">✕</button>
+      <strong>Choose a User</strong>
+    </div>
+    <div class="modal-body">
+      <ul id="modalUserList"></ul>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Helpers ---------- */
+const qs = s => document.querySelector(s);
+function showScreen(n){
+  document.querySelectorAll('section').forEach((sec,i)=>{
+    sec.classList.toggle('active', i===n-1);
+  });
+}
+
+/* ---------- Screen 1 Logic ---------- */
+const nameInput = qs('#nameInput');
+const palInput  = qs('#palInput');
+const checkBtn  = qs('#checkBtn');
+const nextBtn   = qs('#nextBtn');
+
+function isPalindrome(str){
+  const clean = str.toLowerCase().replace(/[^a-z0-9]/g,'');
+  return clean === [...clean].reverse().join('');
+}
+
+checkBtn.onclick = ()=>{
+  if(!palInput.value.trim()){
+    alert('Isi kata palindrome terlebih dahulu!');
+    return;
+  }
+  alert(isPalindrome(palInput.value) ? 'PALINDROME ✅' : 'BUKAN palindrome ❌');
+  if(nameInput.value.trim()) nextBtn.disabled=false;
+};
+
+nextBtn.onclick = ()=>{
+  if(!nameInput.value.trim()){
+    alert('Masukkan nama!');
+    return;
+  }
+  qs('#welcomeName').textContent = nameInput.value.trim();
+  qs('#selectedName').textContent = 'Selected User Name';
+  qs('#selectedAvatar').src = 'https://via.placeholder.com/60'; // reset foto
+  showScreen(2);
+};
+
+/* ---------- DATA USERS ---------- */
+const users = [
+  {name:'Aisyah Putri',   email:'aisyah@gmail.com',  avatar:'https://i.pravatar.cc/150?img=11'},
+  {name:'Budi Santoso',   email:'budi@gmail.com',    avatar:'https://i.pravatar.cc/150?img=12'},
+  {name:'Citra Dewi',     email:'citra@gmail.com',   avatar:'https://i.pravatar.cc/150?img=13'},
+  {name:'Dian Kurniawan', email:'dian@gmail.com',    avatar:'https://i.pravatar.cc/150?img=14'},
+  {name:'Eka Wijaya',     email:'eka@gmail.com',     avatar:'https://i.pravatar.cc/150?img=15'},
+  {name:'Fani Rahma',     email:'fani@gmail.com',    avatar:'https://i.pravatar.cc/150?img=16'},
+  {name:'Galang Saputra', email:'galang@gmail.com',  avatar:'https://i.pravatar.cc/150?img=17'},
+];
+
+/* ---------- Modal Logic ---------- */
+const userModal     = qs('#userModal');
+const modalUserList = qs('#modalUserList');
+function toggleModal(show=true){
+  userModal.classList.toggle('active', show);
+}
+function populateModal(){
+  modalUserList.innerHTML='';
+  users.forEach(u=>{
+    const li=document.createElement('li');
+    li.innerHTML = `
+      <img src="${u.avatar}" alt="">
+      <div class="info">
+        <span>${u.name}</span>
+        <small>${u.email}</small>
+      </div>`;
+    li.onclick = ()=>{
+      qs('#selectedName').textContent   = u.name;
+      qs('#selectedAvatar').src         = u.avatar;
+      toggleModal(false);
+    };
+    modalUserList.appendChild(li);
+  });
+}
+
+/* tombol “Choose a User” */
+qs('#chooseBtn').onclick = ()=>{
+  populateModal();
+  toggleModal(true);
+};
+
+/* klik di luar modal menutup */
+userModal.addEventListener('click',e=>{
+  if(e.target===userModal) toggleModal(false);
+});
+</script>
+</body>
+</html>
